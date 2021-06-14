@@ -1,0 +1,6 @@
+<component name="ArtifactManager">
+  <artifact name="logProject">
+    <output-path>$PROJECT_DIR$/out/artifacts/logProject</output-path>
+    <root id="root" />
+  </artifact>
+</component>

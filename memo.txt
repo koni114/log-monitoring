@@ -1,0 +1,14 @@
+page_
+- 상세화면 별 체감성능 데이터
+  - 접속 시간 accessTime
+  - 체인명 chainId
+  - 화면 ID appId
+  - 화면명 pageName
+  - 화면유형 pageType
+  - 총 걸린시간(초) totalTime
+  - 화면로딩시간(초) loadingTime
+  - 화면렌더링시간(초) renderingTime
+  - 직번 userId
+  - 사용자 IP userIP
+  - 접속 브라우저 browserType
+
