@@ -1,4 +1,4 @@
-from log_detection_utils import utils, spark_utils
+from log_detection_utils import utils
 from unittest import TestCase, main
 from datetime import datetime
 

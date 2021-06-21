@@ -13,11 +13,11 @@ class Config:
     def __init__(self, file_path='./'):
         self.file_path = file_path
         self.file_name = None
-        self.db_file_name = "db_properties.json"
-        self.wb_file_name = "wb_properties.json"
+        self.db_file_name = "DB_properties.json"
+        self.wb_file_name = "WB_properties.json"
 
     def get_prop(self):
-        full_path = os.path.join(self.file_path, self.wb_file_name)
+        full_path = os.path.join(self.file_path, self.file_name)
         if not os.path.isfile(full_path):
             raise FileExistsError(f"해당 경로에 파일이 없습니다. : {full_path}")
         try:
@@ -28,7 +28,7 @@ class Config:
         return conf_dict
 
     def get_wb_prop(self):
-        self.file_name = "wb_properties.json"
+        self.file_name = self.wb_file_name
         conf_dict = self.get_prop()
 
         for key, value in conf_dict.items():
@@ -49,7 +49,7 @@ class Config:
     def get_db_prop(self, db_id=None):
         if db_id is None:
             db_id = 'PPAS'
-        self.file_name = "db_properties.json"
+        self.file_name = self.db_file_name
         conf_dict = self.get_prop()
 
         wb_prop = self.get_wb_prop()

@@ -35,7 +35,7 @@ class Extract:
             .option("url", db_config.get("URL"))\
             .option("dbtable", sql)\
             .option("user", db_config.get("USER"))\
-            .option("password", db_config.get("PWD"))
+            .option("password", db_config.get("PWD")).load()
 
         return result_data
 

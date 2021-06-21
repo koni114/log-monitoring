@@ -16,22 +16,26 @@ class Load:
     def set_config_info(self):
         self.wb_config = self.config.get_wb_prop()
 
-    def save_data_to_db(self, data, target_table, db_id='WB'):
+    def save_data_to_db(self, data, target_table, db_id='WB', save_mode='append'):
         result = "SUCCESS"
         db_config = self.config.get_db_prop(db_id)
         try:
-            data.write.mode("append")\
-                .jdbc(db_config.get("URL"), target_table, db_config)
+            data.write\
+                .format('jdbc').mode(save_mode)\
+                .option('dbtable', target_table)\
+                .options(** db_config).save()
         except Exception as e:
             result = "ERROR"
         return result
 
-    def save_data_to_kudu(self, data, target_table, db_id='HDFS'):
+    def save_data_to_kudu(self, data, target_table, db_id='HDFS', save_mode='append'):
         result = "SUCCESS"
         db_config = self.config.get_db_prop(db_id)
         try:
-            data.write.mode("append")\
-                .jdbc(db_config.get("URL"), target_table, db_config)
+            data.write.format('jdbc')\
+                .mode(save_mode)\
+                .option('dbtable', target_table)\
+                .options(** db_config).save()
         except Exception as e:
             result = "ERROR"
         return result
