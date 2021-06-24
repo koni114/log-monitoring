@@ -7,28 +7,38 @@ import sys
 import importlib
 import re
 
+
 sys.path.append("/Users/heojaehun/IdeaProjects/logDetectionProject")
 
 
-from log_detection_utils import spark_utils
+from log_detection_utils import spark_utils, utils
 from log_detection_extract import extract_task
 from log_detection_load import load_task
 from log_detection_transform import transform_stats, transform_spc, transform_spc_tables
 from log_detection_dm import dm_manager
 from pyspark.sql.functions import col, lit, current_date, stddev_samp
-
-# importlib.reload(transform_spc)
+from datetime import datetime, date
+# importlib.reload(utils)
 
 
 if __name__ == '__main__':
+    #- make logger
+    today = date.today()
+    log_file_name = str(today) + '.log'
+    log_detection_logger = utils.set_logger(log_file_path='./log', log_file_name=log_file_name, level='INFO')
+
     # etl sparkSession instance
+    log_detection_logger.info("##- etl spark session instance")
     etl_spark = spark_utils.create_spark_session(app_name='log_detection_etl',
                                                  master_type='local')
+
 
 
     # 1. splunk CSV File read
     #- data 기본 정보 파악 --> 일별 데이터가 맞는지?
     #-                 --> data Schema 정보가 일치하는지? error가 발생했다면, 다음 process 수행할 수 없음
+    log_detection_logger.info("##- splunk CSV File read")
+    start = datetime.now()
     extract_instance = extract_task.Extract(etl_spark)
     log_raw_data = extract_instance.extract_from_csv_file(file_path='./test_data/retail-data/by-day/',
                                                           file_name='*.csv',
@@ -38,6 +48,8 @@ if __name__ == '__main__':
                                                           ignoreTrailingWhiteSpace='true',
                                                           numPartitions=10
                                                           )
+    end = datetime.now()
+    log_detection_logger.info(f"##- splunk CSV File read complete! --> total time : {end - start}")
 
 
     #- 2. 컬럼명 --> 영문으로 변경
@@ -55,9 +67,14 @@ if __name__ == '__main__':
 
     #- 4. meta 정보 posgreSQL에 저장
     #- 4.1 tb_log_app_info select chain_id, app_id, page_type 호출
+    log_detection_logger.info("##- save meta data to posgreSQL")
+    start = datetime.now()
     log_app_info_save_sql = """(SELECT chain_id, app_id, page_name, page_type, FROM, tb_log_app_info) AS distinct_app_info"""
     tb_log_app_info = extract_instance.extract_from_db(sql=log_app_info_save_sql, db_id='PPAS')
     log_meta_data = log_raw_data.select('chain_id', 'app_id', 'page_name', 'page_type').distinct()
+
+    end = datetime.now()
+    log_detection_logger.info(f"##-save meta data to posgreSQL complete! --> total time : {end - start}")
 
     #- 4.2 join expression 제작
     #- 현재 DB에 없는 Meta 정보만 저장하기 위하여 left anti 사용
@@ -90,6 +107,8 @@ if __name__ == '__main__':
     n_months_row_data = log_raw_data
 
     #- 7. n개월 치 데이터 통계값 계산
+    log_detection_logger.info("##- Statistical calculation")
+    start = datetime.now()
     value_col = ['loading_time']
     group_col = ['chain_id', 'app_id', 'page_name', 'page_type']
 
@@ -117,8 +136,14 @@ if __name__ == '__main__':
                                   db_id='PPAS',
                                   save_mode='append')
 
+    end = datetime.now()
+    log_detection_logger.info(f"##- Statistical calculation complete! --> time : {end - start}")
+
     #- 5. Shewhart 관리도 기반 관리 규격 생성(UCL, CL, LCL)
+    log_detection_logger.info("##- make control chart! ")
     #- 5.1 해석용 관리도를 위한 통계값 계산
+    start = datetime.now()
+
     log_meta_data_collect = log_meta_data.collect()
     qcc_stat_df = None
     for (idx, (chain_id, app_id, page_name, page_type)) in log_meta_data_collect:
@@ -183,14 +208,21 @@ if __name__ == '__main__':
 
             qcc_stat_df = qcc_stat_df.unionAll(qcc_stat_M_tmp_df).coalesce(1)
 
+    end = datetime.now()
+    log_detection_logger.info(f"make control chart complete! --> time: {end - start}")
 
     #- 관리도 통계값 저장
+    log_detection_logger.info("##- save control chart to posgreSQL! ")
+    start = datetime.now()
     log_qcc_stat_instance = dm_manager.LogQccStat(qcc_stat_df)
     log_qcc_stat_data = log_qcc_stat_instance.get_data()
     load_instance.save_data_to_db(data=log_qcc_stat_data,
                                   target_table='tb_log_qcc_stat',
                                   db_id='PPAS',
                                   save_mode='append')
+
+    end = datetime.now()
+    log_detection_logger.info(f"##- save control chart to posgreSQL complete! --> time : {end - start}")
 
 
 

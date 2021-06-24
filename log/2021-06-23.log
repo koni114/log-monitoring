@@ -1,0 +1,3 @@
+[2021-06-23 23:46:01,267][INFO|<ipython-input-44-9527f40d4e60>;6] >> ##- etl spark session instance
+[2021-06-23 23:46:11,798][INFO|<ipython-input-45-a1eefd6dad04>;1] >> ##- splunk CSV File read
+[2021-06-23 23:46:24,145][INFO|<ipython-input-48-f20b6d200507>;1] >> ##- splunk CSV File read time : 0:00:04.072580

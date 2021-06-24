@@ -35,3 +35,31 @@ def get_str_to_datetime(date_string=None, time_format='%Y-%m-%d'):
     except Exception as e:
         raise e
     return date_time
+
+
+def set_logger(log_file_path='./log', log_file_name='test.log', level='ERROR'):
+    import logging.handlers
+    import os
+
+    log_level = ['NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+    if level not in log_level:
+        raise ValueError(f"다음 level 중 하나를 입력해야 합니다. --> NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL"
+                         f"level --> {level}")
+
+    if not os.path.isdir(log_file_path):
+        os.mkdir(log_file_path)
+
+    log = logging.getLogger(log_file_name.split(".")[0])
+    formatter = logging.Formatter('[%(asctime)s][%(levelname)s|%(filename)s;%(lineno)s] >> %(message)s')
+    # Byte -> KB -> MB
+    file_max_byte = 1024 * 1024 * 10 #- 10MB
+    file_handler = logging.handlers.RotatingFileHandler(filename=os.path.join(log_file_path, log_file_name),
+                                                        maxBytes=file_max_byte,
+                                                        backupCount=5)
+
+    file_handler.setFormatter(formatter)
+    log.addHandler(file_handler)
+    log.setLevel(level)
+    return log
+
+

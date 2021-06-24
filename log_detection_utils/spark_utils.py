@@ -21,8 +21,3 @@ def create_spark_session(app_name, master_type):
 
 def union_all(*dfs):
     return reduce(DataFrame.union, dfs)
-
-
-
-
-
