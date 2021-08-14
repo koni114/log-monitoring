@@ -10,7 +10,6 @@
   - 직번 userId
   - 사용자 IP userIP
   - 접속 브라우저 browserType
-
 data
 - 1시간: 2800건
 - 24시간: 7500건
